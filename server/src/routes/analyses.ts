@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import WasteAnalysis from '../models/WasteAnalysis';
 
 const router = Router();
@@ -6,6 +7,10 @@ const router = Router();
 // ─── POST /api/analyses — Save an analysis ───────────────────────────────────
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.status(201).json({ ...req.body, _id: 'demo-' + Date.now() });
+      return;
+    }
     const analysis = new WasteAnalysis(req.body);
     await analysis.save();
     res.status(201).json(analysis);
@@ -19,6 +24,11 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 // ─── GET /api/analyses — List with search + filters ─────────────────────────
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.json({ analyses: [], total: 0, page: 1, pages: 1 });
+      return;
+    }
+
     const { search, material, action, condition, page = '1', limit = '20' } = req.query;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,6 +63,10 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 // ─── GET /api/analyses/:id ────────────────────────────────────────────────────
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.status(404).json({ error: 'Demo mode active. Analysis not found.' });
+      return;
+    }
     const analysis = await WasteAnalysis.findById(req.params.id).lean();
     if (!analysis) {
       res.status(404).json({ error: 'Analysis not found.' });
@@ -68,6 +82,10 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 // ─── DELETE /api/analyses/:id ─────────────────────────────────────────────────
 router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.status(404).json({ error: 'Demo mode active. Cannot delete.' });
+      return;
+    }
     const result = await WasteAnalysis.findByIdAndDelete(req.params.id);
     if (!result) {
       res.status(404).json({ error: 'Analysis not found.' });

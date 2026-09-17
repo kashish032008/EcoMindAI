@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import WasteAnalysis from '../models/WasteAnalysis';
 
 const router = Router();
@@ -6,6 +7,17 @@ const router = Router();
 // ─── GET /api/dashboard ───────────────────────────────────────────────────────
 router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
+    // Return empty dashboard if not connected to database (demo mode)
+    if (mongoose.connection.readyState !== 1) {
+      res.json({
+        overview: { total: 0, reusable: 0, recyclable: 0, preparationNeeded: 0, facilityDependent: 0, compost: 0, specialDisposal: 0 },
+        materialDistribution: [],
+        actionDistribution: [],
+        recentAnalyses: [],
+      });
+      return;
+    }
+
     const [
       totalCount,
       reuseCount,
