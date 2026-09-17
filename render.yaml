@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ecomind-ai
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: MONGODB_URI
+        sync: false
+      - key: GOOGLE_VISION_API_KEY
+        sync: false
